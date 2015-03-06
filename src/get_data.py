@@ -4,7 +4,7 @@ import chess
 import pickle
 from util import *
 
-DATA = "../data/pgn_files/FICS_2000.pgn"
+DATA = "../data/FICS_2000.pgn"
 NUM_GAMES = 10000
 
 games = get_all_games(DATA)
@@ -25,7 +25,11 @@ for index, game in enumerate(games):
 			board.push_san(move)
 			all_boards.append(convert_bitboard_to_image(board))
 
+print "Processed %d games out of %d" % (NUM_GAMES, NUM_GAMES)
+print "Saving data..."
 
 output = open('data_10000.pkl', 'wb')
 pickle.dump(all_boards, output)
 output.close()
+
+print "Done!"
