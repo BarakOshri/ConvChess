@@ -50,5 +50,4 @@ def convert_bitboard_to_image(board):
 				im[i, j, PIECE_TO_INDEX[piece.upper()]] = -1
 
 	return im
-
 	
