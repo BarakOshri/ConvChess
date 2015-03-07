@@ -37,9 +37,6 @@ def convert_bitboard_to_image(board):
 	im2d = np.array(list(str(board).replace('\n', '').replace(' ', ''))).reshape((8, 8))
 	im = np.zeros(BOARD_SIZE)
 
-	im2d = np.array(list(str(board).replace('\n', '').replace(' ', ''))).reshape((8, 8))
-	im = np.zeros(BOARD_SIZE)
-
 	for i in xrange(BOARD_SIZE[0]):
 		for j in xrange(BOARD_SIZE[1]):
 			piece = im2d[i, j]
@@ -49,5 +46,15 @@ def convert_bitboard_to_image(board):
 			else:
 				im[i, j, PIECE_TO_INDEX[piece.upper()]] = -1
 
+	return im
+
+def flip_image(im):
+	return im[::-1, :, :]
+
+def flip_color(im):
+	indices_white = np.where(im == 1)
+	indices_black = np.where(im == -1)
+	im[indices_white] = -1
+	im[indices_black] = 1
 	return im
 	
