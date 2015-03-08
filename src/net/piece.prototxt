@@ -1,0 +1,94 @@
+name: "PieceNet"
+
+layer {
+  name: "input"
+  type: MEMORY_DATA
+  memory_data_param {
+    batch_size: 1000
+    channels: 6
+    height: 8
+    width: 8
+  }
+  top: "data"
+  top: "label"
+}
+
+layer {
+    name: "conv1"
+    type: "Convolution"
+    bottom: "data"
+    top: "conv1"
+    convolution_param {
+        num_output: 96
+        kernel_size: 3
+        pad: 1
+        stride: 1
+    }
+}
+layer {
+    name: "relu1"
+    type: "ReLU"
+    bottom: "conv1"
+    top: "conv1"
+}
+layer {
+    name: "conv2"
+    type: "Convolution"
+    bottom: "conv1"
+    top: "conv2"
+    convolution_param {
+        num_output: 256
+        kernel_size: 3
+        pad: 1
+        stride: 1
+    }
+}
+layer {
+    name: "relu2"
+    type: "ReLU"
+    bottom: "conv2"
+    top: "conv2"
+}
+layer {
+    name: "conv3"
+    type: "Convolution"
+    bottom: "conv2"
+    top: "conv3"
+    convolution_param {
+        num_output: 384
+        kernel_size: 3
+        pad: 1
+        stride: 1
+    }
+}
+layer {
+    name: "relu3"
+    type: "ReLU"
+    bottom: "conv3"
+    top: "conv3"
+}
+layer {
+  name: "fc1"
+  type: INNER_PRODUCT
+  blobs_lr: 1.
+  blobs_lr: 2.
+  inner_product_param {
+    num_output: 64
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+  bottom: "conv3"
+  top: "fc1"
+}
+
+layer {
+  name: "prob"
+  type: "Softmax"
+  bottom: "fc1"
+  bottom: "labels"
+  top: "prob"
+}
