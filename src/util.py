@@ -4,6 +4,7 @@ import numpy as np
 
 BOARD_SIZE = (8, 8, 6)
 PIECE_TO_INDEX = {'P' : 0, 'R' : 1, 'N' : 2, 'B' : 3, 'Q' : 4, 'K' : 5}
+INDEX_TO_PIECE = {0 : 'P', 1 : 'R', 2 : 'N', 3 : 'B', 4 : 'Q', 5 : 'K'}
 Y_TO_CHESSY = {0 : 'a', 1 : 'b', 2 : 'c', 3 : 'd', 4 : 'e', 5 : 'f', 6 : 'g', 7 : 'h'}
 CHESSY_TO_Y = {'a' : 0, 'b' : 1, 'c' : 2, 'd' : 3, 'e' : 4, 'f' : 5, 'g' : 6, 'h' : 7}
 
@@ -79,10 +80,30 @@ def clip_pieces(prob_dist, im):
 	prob_dist[no_white_indices] = 0
 	return prob_dist
 
-# def clip_move(prob_dist, im, coord):
-# 	piece_coord = coord2d_to_chess_coord(coord)
+def clip_move(prob_dist, im, coord):
+	board = chess.Bitboard()
+	for i in xrange(BOARD_SIZE[0]):
+		for j in xrange(BOARD_SIZE[1]):
+			index_piece = np.where(im[(i,j)] != 0)
+			index_piece = index_piece[0]
+			new_coords = flatten_coord2d((7 - i, j))
+			if index_piece.shape == (0,): # no piece
+				board.set_piece_at(new_coords, chess.Piece.from_symbol(''))
+			else:
+				piece = INDEX_TO_PIECE[index_piece[0]]
+				if im[(i,j,index_piece[0])] == -1:
+					piece = piece.lower()
+				board.set_piece_at(new_coords, chess.Piece.from_symbol(piece))
 
-# 	chess.Move.from_uci("c1c2") in board.legal_moves
+	piece_coord = coord2d_to_chess_coord(coord)
+	for i in xrange(BOARD_SIZE[0]):
+		for j in xrange(BOARD_SIZE[1]):
+			to_coord = coord2d_to_chess_coord((i, j))
+			uci_move = piece_coord + to_coord
+			if chess.Move.from_uci(uci_move) not in board.legal_moves:
+				prob_dist[i, j] = 0
+
+	return prob_dist
 
 
 

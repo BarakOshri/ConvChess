@@ -8,6 +8,9 @@ import pickle
 import random
 import time
 import traceback
+import re
+import string
+import math
 from util import *
 from chess import pgn
 
