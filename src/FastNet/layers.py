@@ -77,13 +77,14 @@ def relu_backward(dout, cache):
   return dx
 
 def tanh_forward(x):
-    out = math.tanh(x)
+    print x.shape
+    out = np.tanh(x)
     cache = x
     return out, cache
 
 def tanh_backward(dout, cache):
     x = cache
-    dx = (1-math.tanh(x)^^2)*dout
+    dx = (1-np.square(np.tanh(x)))*dout
     return dx
 
 def dropout_forward(x, dropout_param):
@@ -204,6 +205,7 @@ def softmax_loss(x, y):
   """
   probs = np.exp(x - np.max(x, axis=1, keepdims=True))
   probs /= np.sum(probs, axis=1, keepdims=True)
+  print np.argmax(probs.reshape((64)))
   N = x.shape[0]
   loss = -np.sum(np.log(probs[np.arange(N), y])) / N
   dx = probs.copy()

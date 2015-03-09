@@ -416,28 +416,28 @@ def five_layer_convnet(X, model, y=None, reg=0.0, dropout=1.0,
   return loss, grads
 
 def init_chess_convnet(input_shape=(6, 8, 8), num_classes=64,
-                            filter_size=3, num_filters=(64, 128, 256, 384, 384, 1024, 1024),
+                            filter_size=3, num_filters=(32, 64, 64, 128, 384, 512, 512),
                             weight_scale=1e-2, bias_scale=0, dtype=np.float32):
   C, H, W = input_shape
   F1, F2, F3, F4, F5, FC1, FC2 = num_filters
   model = {}
-  model['W1'] = np.random.randn(F1, 6, filter_size, filter_size)
+  model['W1'] = np.random.random(F1, 6, filter_size, filter_size)
   model['b1'] = np.ones(F1) * 2
-  model['W2'] = np.random.randn(F2, F1, filter_size, filter_size)
-  model['b2'] = np.random.randn(F2)
-  model['W3'] = np.random.randn(F3, F2, filter_size, filter_size)
-  model['b3'] = np.random.randn(F3)
-  model['W4'] = np.random.randn(F4, F3, filter_size, filter_size)
-  model['b4'] = np.random.randn(F4)
-  model['W5'] = np.random.randn(F5, F4, filter_size, filter_size)
-  model['b5'] = np.random.randn(F5)
+  model['W2'] = np.random.random(F2, F1, filter_size, filter_size)
+  model['b2'] = np.random.random(F2)
+  model['W3'] = np.random.random(F3, F2, filter_size, filter_size)
+  model['b3'] = np.random.random(F3)
+  model['W4'] = np.random.random(F4, F3, filter_size, filter_size)
+  model['b4'] = np.random.random(F4)
+  model['W5'] = np.random.random(F5, F4, filter_size, filter_size)
+  model['b5'] = np.random.random(F5)
 
-  model['W6'] = np.random.randn(H * W * F5, FC1)
-  model['b6'] = np.random.randn(FC1)
-  model['W7'] = np.random.randn(FC1, FC2)
-  model['b7'] = np.random.randn(FC2)
-  model['W8'] = np.random.randn(FC2, num_classes)
-  model['b8'] = np.random.randn(num_classes)
+  model['W6'] = np.random.random(H * W * F5, FC1)
+  model['b6'] = np.random.random(FC1)
+  model['W7'] = np.random.random(FC1, FC2)
+  model['b7'] = np.random.random(FC2)
+  model['W8'] = np.random.random(FC2, num_classes)
+  model['b8'] = np.random.random(num_classes)
 
   for i in [1, 2, 3, 4, 5, 6, 7, 8]:
     model['W%d' % i] *= weight_scale
@@ -463,14 +463,14 @@ def chess_convnet(X, model, y=None, reg=0.0, dropout=1):
   dropout_param = {'p': dropout}
   dropout_param['mode'] = 'test' if y is None else 'train'
 
-  a1, cache1 = conv_relu_forward(X, W1, b1, conv_param)
-  a2, cache2 = conv_relu_forward(a1, W2, b2, conv_param)
-  a3, cache3 = conv_relu_forward(a2, W3, b3, conv_param)
-  a4, cache4 = conv_relu_forward(a3, W4, b4, conv_param)
-  a5, cache5 = conv_relu_forward(a4, W5, b5, conv_param)
+  a1, cache1 = conv_tanh_forward(X, W1, b1, conv_param)
+  a2, cache2 = conv_tanh_forward(a1, W2, b2, conv_param)
+  a3, cache3 = conv_tanh_forward(a2, W3, b3, conv_param)
+  a4, cache4 = conv_tanh_forward(a3, W4, b4, conv_param)
+  a5, cache5 = conv_tanh_forward(a4, W5, b5, conv_param)
 
-  a6, cache6 = affine_relu_forward(a5, W6, b6)
-  a7, cache7 = affine_relu_forward(a6, W7, b7)
+  a6, cache6 = affine_tanh_forward(a5, W6, b6)
+  a7, cache7 = affine_tanh_forward(a6, W7, b7)
   scores, cache8 = affine_forward(a7, W8, b8)
 
   if y is None:
@@ -478,13 +478,13 @@ def chess_convnet(X, model, y=None, reg=0.0, dropout=1):
 
   data_loss, dscores = softmax_loss(scores, y)
   da7, dW8, db8 = affine_backward(dscores, cache8)
-  da6, dW7, db7 = affine_relu_backward(da7, cache7)
-  da5, dW6, db6 = affine_relu_backward(da6, cache6)
-  da4, dW5, db5 = conv_relu_backward(da5, cache5)
-  da3, dW4, db4 = conv_relu_backward(da4, cache4)
-  da2, dW3, db3 = conv_relu_backward(da3, cache3)
-  da1, dW2, db2 = conv_relu_backward(da2, cache2)
-  dX, dW1, db1 = conv_relu_backward(da1, cache1)
+  da6, dW7, db7 = affine_tanh_backward(da7, cache7)
+  da5, dW6, db6 = affine_tanh_backward(da6, cache6)
+  da4, dW5, db5 = conv_tanh_backward(da5, cache5)
+  da3, dW4, db4 = conv_tanh_backward(da4, cache4)
+  da2, dW3, db3 = conv_tanh_backward(da3, cache3)
+  da1, dW2, db2 = conv_tanh_backward(da2, cache2)
+  dX, dW1, db1 = conv_tanh_backward(da1, cache1)
 
   grads = { 'W1': dW1, 'b1': db1, 'W2': dW2, 'b2': db2, 'W3': dW3, 'b3': db3,
             'W4': dW4, 'b4': db4, 'W5': dW5, 'b5': db5, 'W6': dW6, 'b6': db6,

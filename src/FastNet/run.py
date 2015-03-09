@@ -33,8 +33,8 @@ def train(X_train, y_train, X_val, y_val, model, fn):
 	trainer = ClassifierTrainer()
 	best_model, loss_history, train_acc_history, val_acc_history = trainer.train(
           	X_train, y_train, X_val, y_val, model, fn,
-          	reg=0.00, learning_rate=0.0005, batch_size=200, num_epochs=10,
-          	learning_rate_decay=0.95, update='momentum', verbose=True)
+          	reg=0.00, learning_rate=0.00005, batch_size=100, num_epochs=1,
+          	learning_rate_decay=0.99, update='rmsprop', verbose=True)
 
 	return (best_model, loss_history, train_acc_history, val_acc_history)
 
