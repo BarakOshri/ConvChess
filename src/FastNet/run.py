@@ -1,39 +1,40 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from time import time
-from cs231n.layers import *
-from cs231n.fast_layers import *
-from cs231n.classifiers.convnet import *
-from cs231n.classifier_trainer import ClassifierTrainer
-from cs231n.gradient_check import eval_numerical_gradient_array
-from ../util.py import *
+import pickle
+from layers import *
+from fast_layers import *
+from classifiers.convnet import *
+from classifier_trainer import ClassifierTrainer
+from gradient_check import eval_numerical_gradient_array
+from util import *
 
-def get_data(path, data=True, label=True):
-	return ALL OF THE DATA
+def get_data(path):
+	f = open(path)
+	return pickle.load(f)
 
-def initModels():
-	pieceModel = init_chess_convnet()
-	pawnModel = init_chess_convnet()
-	bishopModel = init_chess_convnet()
-	knightModel = init_chess_convnet()
-	queenModel = init_chess_convnet()
-	kingModel = init_chess_convnet()
-	rookModel = init_chess_convnet()
+def initModels(fn):
+	pieceModel = fn()
+	pawnModel = fn()
+	bishopModel = fn()
+	knightModel = fn()
+	queenModel = fn()
+	kingModel = fn()
+	rookModel = fn()
 	models = {'Piece': pieceModel, 'P': pawnModel, 'B': bishopModel, 'R': rookModel, 'Q': queenModel, 'K':kingModel, 'N':knightModel}
 	return models
 
-def dumpModels(models):
+def save_data(data, name):
+	output = open(name, 'wb')
+	pickle.dump(data, output)
+	output.close()
 
-def loadModels():
-	SOMETHING
-	return models
-
-def train(X_train, y_train, X_val, y_val, model):
+def train(X_train, y_train, X_val, y_val, model, fn):
 	trainer = ClassifierTrainer()
 	best_model, loss_history, train_acc_history, val_acc_history = trainer.train(
-          	X_train, y_train, X_val, y_val, model, chess_convnet,
-          	reg=0.05, learning_rate=0.00005, batch_size=50, num_epochs=15,
-          	learning_rate_decay=1.0, update='rmsprop', verbose=True)
+          	X_train, y_train, X_val, y_val, model, fn,
+          	reg=0.00, learning_rate=0.0005, batch_size=200, num_epochs=10,
+          	learning_rate_decay=0.95, update='momentum', verbose=True)
 
 	return (best_model, loss_history, train_acc_history, val_acc_history)
 

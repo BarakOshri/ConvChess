@@ -51,6 +51,22 @@ def convert_bitboard_to_image(board):
 
 	return im
 
+def convert_image_to_bitboard(im):
+	board = chess.Bitboard()
+	board.clear()
+	for i in xrange(BOARD_SIZE[0]):
+		for j in xrange(BOARD_SIZE[1]):
+			index_piece = np.where(im[(i,j)] != 0)
+			index_piece = index_piece[0]
+			new_coords = flatten_coord2d((7 - i, j))
+			if index_piece.shape != (0,):
+				piece = INDEX_TO_PIECE[index_piece[0]]
+				if im[(i,j,index_piece[0])] == -1:
+					piece = piece.lower()
+				board.set_piece_at(new_coords, chess.Piece.from_symbol(piece))
+
+	return board
+
 def flip_image(im):
 	return im[::-1, :, :]
 
@@ -81,19 +97,7 @@ def clip_pieces(prob_dist, im):
 	return prob_dist
 
 def clip_move(prob_dist, im, coord):
-	board = chess.Bitboard()
-	for i in xrange(BOARD_SIZE[0]):
-		for j in xrange(BOARD_SIZE[1]):
-			index_piece = np.where(im[(i,j)] != 0)
-			index_piece = index_piece[0]
-			new_coords = flatten_coord2d((7 - i, j))
-			if index_piece.shape == (0,): # no piece
-				board.set_piece_at(new_coords, chess.Piece.from_symbol(''))
-			else:
-				piece = INDEX_TO_PIECE[index_piece[0]]
-				if im[(i,j,index_piece[0])] == -1:
-					piece = piece.lower()
-				board.set_piece_at(new_coords, chess.Piece.from_symbol(piece))
+	board = convert_image_to_bitboard(im)
 
 	piece_coord = coord2d_to_chess_coord(coord)
 	for i in xrange(BOARD_SIZE[0]):

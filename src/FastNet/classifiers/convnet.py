@@ -1,8 +1,8 @@
 import numpy as np
 
-from cs231n.layers import *
-from cs231n.fast_layers import *
-from cs231n.layer_utils import *
+from layers import *
+from fast_layers import *
+from layer_utils import *
 
 
 def two_layer_convnet(X, model, y=None, reg=0.0, dropout=1.0):
@@ -354,9 +354,9 @@ def five_layer_convnet(X, model, y=None, reg=0.0, dropout=1.0,
   dropout_param = {'p': dropout}
   dropout_param['mode'] = 'test' if y is None else 'train'
 
-  a1, cache1 = conv_relu_pool_forward(X, W1, b1, conv_param_1, pool_param)
-  a2, cache2 = conv_relu_pool_forward(a1, W2, b2, conv_param_2, pool_param)
-  a3, cache3 = conv_relu_pool_forward(a2, W3, b3, conv_param_3, pool_param)
+  a1, cache1 = conv_relu_forward(X, W1, b1, conv_param_1)
+  a2, cache2 = conv_relu_forward(a1, W2, b2, conv_param_2)
+  a3, cache3 = conv_relu_forward(a2, W3, b3, conv_param_3)
   a4, cache4 = affine_relu_forward(a3, W4, b4)
 
   if extract_features:
@@ -364,7 +364,8 @@ def five_layer_convnet(X, model, y=None, reg=0.0, dropout=1.0,
     # TODO: Return features extracted from X.                                 #
     # HINT: This should be VERY simple!                                       #
     ###########################################################################
-    return a4.reshape(:, -1)
+    #return a4.reshape(:, -1)
+    return a4
     ###########################################################################
     #                         END OF YOUR CODE                                #  
     ###########################################################################
@@ -421,7 +422,7 @@ def init_chess_convnet(input_shape=(6, 8, 8), num_classes=64,
   F1, F2, F3, F4, F5, FC1, FC2 = num_filters
   model = {}
   model['W1'] = np.random.randn(F1, 6, filter_size, filter_size)
-  model['b1'] = np.random.randn(F1)
+  model['b1'] = np.ones(F1) * 2
   model['W2'] = np.random.randn(F2, F1, filter_size, filter_size)
   model['b2'] = np.random.randn(F2)
   model['W3'] = np.random.randn(F3, F2, filter_size, filter_size)
@@ -435,10 +436,10 @@ def init_chess_convnet(input_shape=(6, 8, 8), num_classes=64,
   model['b6'] = np.random.randn(FC1)
   model['W7'] = np.random.randn(FC1, FC2)
   model['b7'] = np.random.randn(FC2)
-  model['W7'] = np.random.randn(FC2, num_classes)
-  model['b7'] = np.random.randn(num_classes)
+  model['W8'] = np.random.randn(FC2, num_classes)
+  model['b8'] = np.random.randn(num_classes)
 
-  for i in [1, 2, 3, 4, 5, 6, 7]:
+  for i in [1, 2, 3, 4, 5, 6, 7, 8]:
     model['W%d' % i] *= weight_scale
     model['b%d' % i] *= bias_scale
 
@@ -447,7 +448,7 @@ def init_chess_convnet(input_shape=(6, 8, 8), num_classes=64,
 
   return model
 
-def chess_convnet(X, model, y=None, reg=0.0):
+def chess_convnet(X, model, y=None, reg=0.0, dropout=1):
   W1, b1 = model['W1'], model['b1']
   W2, b2 = model['W2'], model['b2']
   W3, b3 = model['W3'], model['b3']
@@ -455,20 +456,21 @@ def chess_convnet(X, model, y=None, reg=0.0):
   W5, b5 = model['W5'], model['b5']
   W6, b6 = model['W6'], model['b6']
   W7, b7 = model['W7'], model['b7']
+  W8, b8 = model['W8'], model['b8']
 
   conv_param = {'stride': 1, 'pad': (W1.shape[2] - 1) / 2}
   pool_param = {'stride': 2, 'pool_height': 2, 'pool_width': 2}
   dropout_param = {'p': dropout}
   dropout_param['mode'] = 'test' if y is None else 'train'
 
-  a1, cache1 = conv_relu_forward(X, W1, b1, conv_param, pool_param)
-  a2, cache2 = conv_relu_forward(a1, W2, b2, conv_param, pool_param)
-  a3, cache3 = conv_relu_forward(a2, W3, b3, conv_param, pool_param)
-  a4, cache4 = conv_relu_forward(a3, W4, b4, conv_param, pool_param)
-  a5, cache5 = conv_relu_forward(a4, W5, b5, conv_param, pool_param)
+  a1, cache1 = conv_relu_forward(X, W1, b1, conv_param)
+  a2, cache2 = conv_relu_forward(a1, W2, b2, conv_param)
+  a3, cache3 = conv_relu_forward(a2, W3, b3, conv_param)
+  a4, cache4 = conv_relu_forward(a3, W4, b4, conv_param)
+  a5, cache5 = conv_relu_forward(a4, W5, b5, conv_param)
 
   a6, cache6 = affine_relu_forward(a5, W6, b6)
-  a7, cache7 = affine_relu_forward(a6, W7, W7)
+  a7, cache7 = affine_relu_forward(a6, W7, b7)
   scores, cache8 = affine_forward(a7, W8, b8)
 
   if y is None:
@@ -486,7 +488,7 @@ def chess_convnet(X, model, y=None, reg=0.0):
 
   grads = { 'W1': dW1, 'b1': db1, 'W2': dW2, 'b2': db2, 'W3': dW3, 'b3': db3,
             'W4': dW4, 'b4': db4, 'W5': dW5, 'b5': db5, 'W6': dW6, 'b6': db6,
-            'W7': dW7, 'b7': db7}
+            'W7': dW7, 'b7': db7, 'W8': dW8, 'b8': db8}
 
   reg_loss = 0.0
   for p in ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8']:

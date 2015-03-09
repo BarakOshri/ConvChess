@@ -1,5 +1,5 @@
-from cs231n.layers import *
-from cs231n.fast_layers import *
+from layers import *
+from fast_layers import *
 
 def conv_relu_forward(x, w, b, conv_param):
   """
