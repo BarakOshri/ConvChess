@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 def affine_forward(x, w, b):
   """
@@ -12,7 +13,7 @@ def affine_forward(x, w, b):
   x - Input data, of shape (N, d_1, ..., d_k)
   w - Weights, of shape (D, M)
   b - Biases, of shape (M,)
-  
+
   Returns a tuple of:
   - out: output, of shape (N, M)
   - cache: (x, w, b)
@@ -75,6 +76,15 @@ def relu_backward(dout, cache):
   dx = np.where(x > 0, dout, 0)
   return dx
 
+def tanh_forward(x):
+    out = math.tanh(x)
+    cache = x
+    return out, cache
+
+def tanh_backward(dout, cache):
+    x = cache
+    dx = (1-math.tanh(x)^^2)*dout
+    return dx
 
 def dropout_forward(x, dropout_param):
   """
