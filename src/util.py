@@ -90,11 +90,12 @@ def chess_coord_to_coord2d(chess_coord):
 def flatten_coord2d(coord2d):
 	return ((8 * coord2d[0]) + coord2d[1])
 
-def clip_pieces(prob_dist, im):
-	no_white_indices = np.where(im != 1)
-	no_white_indices = no_white_indices[:2]
-	prob_dist[no_white_indices] = 0
-	return prob_dist
+def clip_pieces(prob_dists, ims):
+	for index, im in enumerate(ims):
+		no_white_indices = np.where(im != 1)
+		no_white_indices = no_white_indices[:2]
+		prob_dists[index][no_white_indices] = 0
+	return prob_dists
 
 def clip_move(prob_dist, im, coord):
 	board = convert_image_to_bitboard(im)

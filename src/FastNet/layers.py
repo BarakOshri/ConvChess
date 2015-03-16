@@ -77,7 +77,6 @@ def relu_backward(dout, cache):
   return dx
 
 def tanh_forward(x):
-    print x.shape
     out = np.tanh(x)
     cache = x
     return out, cache
@@ -118,7 +117,7 @@ def dropout_forward(x, dropout_param):
     # TODO: Implement the training phase forward pass for inverted dropout.   #
     # Store the dropout mask in the mask variable.                            #
     ###########################################################################
-    mask = np.random.rand(x.shape) < p
+    mask = np.random.rand(*x.shape) < p
     out = x * mask
     ###########################################################################
     #                            END OF YOUR CODE                             #
@@ -205,7 +204,6 @@ def softmax_loss(x, y):
   """
   probs = np.exp(x - np.max(x, axis=1, keepdims=True))
   probs /= np.sum(probs, axis=1, keepdims=True)
-  print np.argmax(probs.reshape((64)))
   N = x.shape[0]
   loss = -np.sum(np.log(probs[np.arange(N), y])) / N
   dx = probs.copy()

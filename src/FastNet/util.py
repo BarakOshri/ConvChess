@@ -88,28 +88,67 @@ def chess_coord_to_coord2d(chess_coord):
 	return (8 - int(chess_coord[1]), CHESSY_TO_Y[chess_coord[0]])
 
 def flatten_coord2d(coord2d):
-	return ((8 * coord2d[0]) + coord2d[1])
+	return 8 * coord2d[0] + coord2d[1]
+	# return ((8 * coord2d[0]) + coord2d[1])
 
-def clip_pieces(prob_dist, im):
-	no_white_indices = np.where(im != 1)
-	no_white_indices = no_white_indices[:2]
-	prob_dist[no_white_indices] = 0
+def clip_pieces_single(prob_dist, im):
+	# 1, 64 : dimension of prob_dists
+	# 6, 8, 8 : dimensions of ims
+
+	indices = np.max(im, axis=0)
+	indices[indices < 0] = 0
+	prob_dist = np.reshape(indices, (1, 64)) * prob_dist
 	return prob_dist
 
-def clip_move(prob_dist, im, coord):
-	board = convert_image_to_bitboard(im)
+def clip_pieces(prob_dists, ims):
+	# 100, 64 : dimension of prob_dists
+	# 100, 6, 8, 8 : dimensions of ims
+
+	indices = np.max(ims, axis=1)
+	indices[indices < 0] = 0
+	prob_dists = np.reshape(indices, (-1, 64)) * prob_dists
+	return prob_dists
+
+def clip_moves(prob_dist, im, coord):
+
+	# 1, 64
+	# 6, 8 ,8
+	# (5, 0)
+
+	# im2 = np.rollaxis(im, 0, 3)
+	# board = convert_image_to_bitboard(im2)
+
+	# piece_coord = coord2d_to_chess_coord(coord)
+	# for i in range(BOARD_SIZE[0]):
+	# 	for j in range(BOARD_SIZE[1]):
+	# 		to_coord = coord2d_to_chess_coord((i, j))
+	# 		uci_move = piece_coord + to_coord
+	# 		if chess.Move.from_uci(uci_move) not in board.legal_moves:
+	# 			prob_dist[0, j + i*8] = 0.0
+
+	# return prob_dist
+
+
+	prob_dist2 = np.copy(prob_dist)
+
+	im2 = np.rollaxis(im, 0, 3)
+	board = convert_image_to_bitboard(im2)
 
 	piece_coord = coord2d_to_chess_coord(coord)
 	for i in xrange(BOARD_SIZE[0]):
 		for j in xrange(BOARD_SIZE[1]):
 			to_coord = coord2d_to_chess_coord((i, j))
 			uci_move = piece_coord + to_coord
+			# print chess.Move.from_uci(uci_move), chess.Move.from_uci(uci_move) in board.legal_moves
 			if chess.Move.from_uci(uci_move) not in board.legal_moves:
-				prob_dist[i, j] = 0
-			else:
-				prob_dist[i, j] = 1
+				# print "And I zerod it"
+				c = flatten_coord2d((i, j))
+				# print "Before: ", prob_dist[:, c]
+				prob_dist2[:, c] = 0.0
+				# print "After: ", prob_dist[:, c]
+	# print np.zeros_like(prob_dist) == prob_dist
 
-	return prob_dist
+	return prob_dist2
 
 
 

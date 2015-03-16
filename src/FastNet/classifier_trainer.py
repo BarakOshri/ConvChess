@@ -1,5 +1,5 @@
 import numpy as np
-
+from util import *
 
 class ClassifierTrainer(object):
   """ The trainer class performs SGD with momentum on a cost function """
@@ -156,9 +156,14 @@ class ClassifierTrainer(object):
           if predict_fn is not None:
             X_val_slice = predict_fn(X_val_slice)
           scores = loss_function(X_val_slice, model)
+          #scores = clip_pieces(scores, X_val_slice)
           y_pred_val.append(np.argmax(scores, axis=1))
+
         y_pred_val = np.hstack(y_pred_val)
-        val_acc = np.mean(y_pred_val ==  y_val)
+        numI = X_val.shape[0] / 100
+        #print y_pred_val.shape, y_val[:numI * 100].shape
+        val_acc = np.mean(y_pred_val ==  y_val[:numI * 100])
+        #print val_acc
         val_acc_history.append(val_acc)
         
         # keep track of the best model based on validation accuracy
@@ -178,14 +183,3 @@ class ClassifierTrainer(object):
       print 'finished optimization. best validation accuracy: %f' % (best_val_acc, )
     # return the best model and the training history statistics
     return best_model, loss_history, train_acc_history, val_acc_history
-
-
-
-
-
-
-
-
-
-
-

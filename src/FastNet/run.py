@@ -31,20 +31,37 @@ def save_data(data, name):
 
 def train(X_train, y_train, X_val, y_val, model, fn):
 	trainer = ClassifierTrainer()
+	print X_train.shape, y_train.shape, X_val.shape, y_val.shape
 	best_model, loss_history, train_acc_history, val_acc_history = trainer.train(
           	X_train, y_train, X_val, y_val, model, fn,
-          	reg=0.00, learning_rate=0.00005, batch_size=100, num_epochs=1,
-          	learning_rate_decay=0.99, update='rmsprop', verbose=True)
+          	reg=0.0000, learning_rate=0.0015, batch_size=250, num_epochs=15,
+          	learning_rate_decay=0.999, update='rmsprop', verbose=True, dropout=1.0)
 
 	return (best_model, loss_history, train_acc_history, val_acc_history)
+
+def plot(loss_history, train_acc_history, val_acc_history):
+	plt.subplot(2, 1, 1)
+	plt.plot(train_acc_history)
+	plt.plot(val_acc_history)
+	plt.title('accuracy vs time')
+	plt.legend(['train', 'val'], loc=4)
+	plt.xlabel('epoch')
+	plt.ylabel('classification accuracy')
+
+	plt.subplot(2, 1, 2)
+	plt.plot(loss_history)
+	plt.title('loss vs time')
+	plt.xlabel('iteration')
+	plt.ylabel('loss')
+	plt.show()
 
 def gradient_check(X, model, y):
 	loss, grads = chess_convnet(X, model, y)
 	dx_num = eval_numerical_gradient_array(lambda x: chess_convnet(x, model)[1]['W1'], x, grads)
 	return rel_error(dx_num, grads['W1'])
 
-def predict(X, model):
-	return chess_convnet(X, model)
+def predict(X, model, fn):
+	return fn(X, model)
 
 def predictionAccuracy(predictions, label):
 	return np.mean(predictions == label)
@@ -60,26 +77,29 @@ def boardToScores(board):
 
 def predictMove(img, models):
 	modelScores = {}
-	scores = chess_convnet([img], models['Piece'])
+	scores = three_layer_convnet([img], models['piece'])
 	for key in models.keys():
-		if key != 'Piece':
-			modelScores[key] = chess_convnet([img], models[key])
+		if key != 'piece':
+			modelScores[key] = three_layer_convnet([img], models[key])
 
-	availablePiecesBoard = clip_pieces(scoresToBoard(scores), img)
+	availablePiecesBoard = clip_pieces(scores, img) # (1, 64) size
 
 	maxScore = 0
 	maxFromCoordinate, maxToCoordinate = None
 	for i in range(64):
 		coordinate = scoreToCoordinateIndex(i)
-		if availablePiecesBoard[coordinate[0], coordinate[1]] != 0:
+		if availablePiecesBoard[i] != 0:
 			pieceType = INDEX_TO_PIECE[np.argmax(img[:, coordinate[0], coordinate[1]])]
 			availableMovesBoard = clip_moves(modelScores[pieceType], img, coordinate)
-			composedScore = np.max(boardToScores(availableMovesBoard)) * availablePiecesBoard[coordinate[0], coordinate[1]]
+			composedScore = np.max(boardToScores(availableMovesBoard)) * availablePiecesBoard[i]
 			if composedScore > maxScore:
 				maxScore = composedScore
 				maxFromCoordinate, maxToCoordinate = coordinate, scoreToCoordinateIndex(np.argmax(boardToScores(availableMovesBoard)))
 
-	return (maxFromCoordinate, MaxToCoordinate)
+	maxFromCoordinate = coord2d_to_chess_coord(maxFromCoordinate)
+	maxToCoordinate = coord2d_to_chess_coord(maxToCoordinate)
+
+	return maxFromCoordinate + maxToCoordinate
 
 def main():
 	pass
